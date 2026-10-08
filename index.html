@@ -3,498 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>NAIJA TURF: Street & Campus Rivalry</title>
-  
-  <!-- PWA Capabilities -->
-  <meta name="theme-color" content="#022c22">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="NaijaTurf">
-  
-  <!-- Tailwind CSS & FontAwesome Icons -->
+  <title>NAIJA TURF: Living Nigeria Simulation</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            naija: {
-              green: '#008751',
-              darkGreen: '#022c22',
-              gold: '#fbbf24',
-              accent: '#10b981'
-            }
-          }
-        }
-      }
-    }
-  </script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
+    * { font-family: 'Plus Jakarta Sans', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
     
-    * {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
+    #streetCanvas {
+      background: #111827;
+      touch-action: none;
     }
-
-    /* Ankara Pattern Subtle Background Overlay */
-    .ankara-bg {
-      background-color: #022c22;
-      background-image: radial-gradient(#008751 0.75px, transparent 0.75px), radial-gradient(#fbbf24 0.75px, #022c22 0.75px);
-      background-size: 30px 30px;
-      background-position: 0 0, 15px 15px;
-      background-opacity: 0.15;
-    }
-
-    /* Glassmorphism styling */
-    .glass-card {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .light .glass-card {
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    /* Hide Scrollbar for clean mobile view */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex justify-center items-center overflow-x-hidden selection:bg-emerald-500 selection:text-black">
+<body class="bg-gray-950 text-white min-h-screen flex justify-center items-center overflow-hidden">
 
-  <!-- Mobile Viewport Container (360px - 430px Target) -->
-  <div id="app-container" class="w-full max-w-[430px] h-[100dvh] flex flex-col justify-between bg-gray-900 shadow-2xl relative overflow-hidden border-x border-gray-800/50">
+  <!-- Main Mobile Game Container -->
+  <div id="gameApp" class="w-full max-w-[420px] h-[100dvh] bg-gray-900 flex flex-col justify-between relative shadow-2xl border-x border-gray-800">
 
-    <!-- TOP HEADER / STATUS BAR -->
-    <header class="p-4 bg-naija-darkGreen border-b border-emerald-900/50 flex justify-between items-center shrink-0 z-20">
-      <div class="flex items-center gap-2.5">
-        <div id="userAvatar" class="w-10 h-10 rounded-full bg-amber-400 border-2 border-emerald-400 flex items-center justify-center font-bold text-black text-lg">
-          👤
+    <!-- Top Real-Time Status Bar -->
+    <header class="p-3 bg-emerald-950/90 border-b border-emerald-800/60 flex justify-between items-center z-20">
+      <div>
+        <div class="text-[10px] uppercase font-black text-emerald-400 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="zoneName">Lagos Street (Yaba)</span>
         </div>
-        <div>
-          <h1 id="userName" class="font-extrabold text-sm text-white leading-tight">Street Hustler</h1>
-          <span id="userTeam" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-full font-bold">
-            Edo Poly
-          </span>
-        </div>
+        <div class="text-xs font-extrabold text-white" id="playerName">Lekki Hustler (LVL 1)</div>
       </div>
-
-      <div class="flex items-center gap-2">
-        <!-- PWA Install Button -->
-        <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-amber-400 text-black font-extrabold text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-lg animate-bounce">
-          <i class="fa-solid fa-download"></i> Install
-        </button>
-
-        <!-- Theme Toggle -->
-        <button onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-emerald-950 border border-emerald-800 text-amber-400 flex items-center justify-center text-sm">
-          <i class="fa-solid fa-moon" id="themeIcon"></i>
-        </button>
+      <div class="text-right">
+        <div class="text-xs font-black text-amber-400" id="cashStat">₦75,000</div>
+        <div class="text-[10px] text-gray-300" id="fuelStat">⛽ Fuel: 100%</div>
       </div>
     </header>
 
-    <!-- MAIN INTERACTIVE SCREENS AREA -->
-    <main class="flex-1 overflow-y-auto no-scrollbar p-4 relative z-10" id="mainScreen">
+    <!-- REAL-TIME 2D CANVAS STREET VIEW -->
+    <div class="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
+      <canvas id="streetCanvas" width="380" height="420" class="rounded-xl border border-gray-800 shadow-inner"></canvas>
+      
+      <!-- Overlay Toast / AI Event Alert -->
+      <div id="eventOverlay" class="absolute top-3 left-3 right-3 bg-red-950/90 border border-red-700 p-2.5 rounded-xl text-xs flex justify-between items-center hidden animate-bounce">
+        <span class="font-black text-red-200" id="eventText">🚨 LASTMA Checkpoint ahead!</span>
+        <button onclick="dismissEvent()" class="bg-red-500 text-black font-extrabold text-[10px] px-2 py-1 rounded">DEAL</button>
+      </div>
 
-      <!-- ================= SCREEN 1: ONBOARDING ================= -->
-      <section id="screenOnboarding" class="space-y-6 py-2">
-        <div class="text-center space-y-2">
-          <div class="inline-block p-3 rounded-2xl bg-emerald-950 border border-emerald-800 text-3xl">🇳🇬</div>
-          <h2 class="text-2xl font-black text-white tracking-tight">REP YOUR TURF</h2>
-          <p class="text-xs text-gray-400">Join a school or area squad. Out-hustle rival turfs across Nigeria.</p>
+      <!-- Controls Layer (D-Pad Joystick) -->
+      <div class="absolute bottom-4 left-4 right-4 flex justify-between items-center z-10 opacity-80">
+        <!-- Directional D-Pad -->
+        <div class="grid grid-cols-3 gap-1 w-32 h-32">
+          <div></div>
+          <button onmousedown="movePlayer('up')" ontouchstart="movePlayer('up')" class="bg-gray-800 border border-gray-600 rounded-lg text-white text-lg flex items-center justify-center font-black active:bg-emerald-500">▲</button>
+          <div></div>
+          <button onmousedown="movePlayer('left')" ontouchstart="movePlayer('left')" class="bg-gray-800 border border-gray-600 rounded-lg text-white text-lg flex items-center justify-center font-black active:bg-emerald-500">◀</button>
+          <div class="bg-gray-900 rounded-lg border border-gray-700 flex items-center justify-center text-[9px] text-gray-500 font-bold">PAD</div>
+          <button onmousedown="movePlayer('right')" ontouchstart="movePlayer('right')" class="bg-gray-800 border border-gray-600 rounded-lg text-white text-lg flex items-center justify-center font-black active:bg-emerald-500">▶</button>
+          <div></div>
+          <button onmousedown="movePlayer('down')" ontouchstart="movePlayer('down')" class="bg-gray-800 border border-gray-600 rounded-lg text-white text-lg flex items-center justify-center font-black active:bg-emerald-500">▼</button>
+          <div></div>
         </div>
 
-        <form onsubmit="handleOnboarding(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Your Alias / Handle</label>
-            <input type="text" id="inputAlias" required placeholder="e.g. Lekki_VibeCoder" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Select Avatar</label>
-            <div class="grid grid-cols-4 gap-2 text-2xl" id="avatarPicker">
-              <button type="button" onclick="selectAvatar('🚀')" class="avatar-opt p-3 bg-gray-950 border border-emerald-500/80 rounded-xl">🚀</button>
-              <button type="button" onclick="selectAvatar('💻')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">💻</button>
-              <button type="button" onclick="selectAvatar('👑')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">👑</button>
-              <button type="button" onclick="selectAvatar('🔥')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">🔥</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Choose School / Turf Squad</label>
-            <select id="inputTurf" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
-              <option value="Edo Poly">Edo Poly (Benin City)</option>
-              <option value="UNILAG Akoka">UNILAG (Akoka, Lagos)</option>
-              <option value="Ajegunle FC">Ajegunle Warriors (Lagos)</option>
-              <option value="Wuse II Squad">Wuse II (Abuja)</option>
-              <option value="Trans-Amadi">Trans-Amadi (Port Harcourt)</option>
-              <option value="Kano Tech Hub">Kano Tech Hub (Kano)</option>
-            </select>
-          </div>
-
-          <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black font-extrabold text-sm rounded-xl shadow-lg hover:opacity-95 transition active:scale-95">
-            ENTER THE STREETS <i class="fa-solid fa-arrow-right ml-1"></i>
-          </button>
-        </form>
-      </section>
-
-      <!-- ================= SCREEN 2: CORE LIFE LOOP ================= -->
-      <section id="screenHustle" class="hidden space-y-5">
-        
-        <!-- Vitals Bars -->
-        <div class="glass-card p-3.5 rounded-2xl space-y-2.5">
-          <div class="grid grid-cols-2 gap-3 text-xs font-bold">
-            <div class="bg-gray-950/80 p-2.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
-              <span class="text-gray-400"><i class="fa-solid fa-wallet text-emerald-400"></i> Cash:</span>
-              <span class="text-emerald-400 font-extrabold" id="statCash">₦50,000</span>
-            </div>
-            <div class="bg-gray-950/80 p-2.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
-              <span class="text-gray-400"><i class="fa-solid fa-fire text-amber-400"></i> Rep:</span>
-              <span class="text-amber-400 font-extrabold" id="statRep">120 PTS</span>
-            </div>
-          </div>
-
-          <!-- Meters -->
-          <div class="space-y-2 text-[11px] font-bold">
-            <div>
-              <div class="flex justify-between text-gray-400 mb-1">
-                <span><i class="fa-solid fa-bolt text-amber-400"></i> Energy</span>
-                <span id="labelEnergy">80%</span>
-              </div>
-              <div class="w-full bg-gray-950 rounded-full h-2 overflow-hidden border border-gray-800">
-                <div id="barEnergy" class="bg-amber-400 h-full w-[80%] transition-all"></div>
-              </div>
-            </div>
-
-            <div>
-              <div class="flex justify-between text-gray-400 mb-1">
-                <span><i class="fa-solid fa-utensils text-red-400"></i> Hunger</span>
-                <span id="labelHunger">30%</span>
-              </div>
-              <div class="w-full bg-gray-950 rounded-full h-2 overflow-hidden border border-gray-800">
-                <div id="barHunger" class="bg-red-500 h-full w-[30%] transition-all"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Daily Hustles Grid -->
-        <div class="space-y-3">
-          <h3 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-hammer text-emerald-400"></i> Active Hustles
-          </h3>
-
-          <div class="grid grid-cols-1 gap-2.5">
-            <!-- Hustle 1 -->
-            <button onclick="doHustle('pos')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-emerald-500/50 active:scale-95 transition">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 text-lg">
-                  🏧
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-xs text-white">POS Agent Stall</h4>
-                  <p class="text-[10px] text-gray-400">-10% Energy | +₦15,000 Cash</p>
-                </div>
-              </div>
-              <span class="text-xs bg-emerald-500 text-black font-extrabold px-2.5 py-1 rounded-lg">+15 Rep</span>
-            </button>
-
-            <!-- Hustle 2 -->
-            <button onclick="doHustle('dev')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-purple-500/50 active:scale-95 transition">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-purple-950 border border-purple-800 flex items-center justify-center text-purple-400 text-lg">
-                  💻
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-xs text-white">Remote Freelance Gig</h4>
-                  <p class="text-[10px] text-gray-400">-25% Energy | +₦60,000 Cash</p>
-                </div>
-              </div>
-              <span class="text-xs bg-purple-500 text-white font-extrabold px-2.5 py-1 rounded-lg">+40 Rep</span>
-            </button>
-
-            <!-- Hustle 3 -->
-            <button onclick="doHustle('food')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-amber-500/50 active:scale-95 transition">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-amber-950 border border-amber-800 flex items-center justify-center text-amber-400 text-lg">
-                  🍲
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-xs text-white">Eat Mama Put / Food</h4>
-                  <p class="text-[10px] text-gray-400">-₦5,000 Cash | -40% Hunger</p>
-                </div>
-              </div>
-              <span class="text-xs bg-amber-400 text-black font-extrabold px-2.5 py-1 rounded-lg">+30 Energy</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Dynamic Event Trigger -->
-        <button onclick="triggerRandomWahala()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-red-600 text-black font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-2">
-          <i class="fa-solid fa-triangle-exclamation"></i> FACE STREET WAHALA / EVENT
+        <!-- Action Button -->
+        <button onclick="interactStreet()" class="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-amber-400 text-black font-black text-xs shadow-lg flex flex-col items-center justify-center border-2 border-white active:scale-90">
+          <i class="fa-solid fa-hand text-base"></i>
+          <span>ACTION</span>
         </button>
-      </section>
+      </div>
+    </div>
 
-      <!-- ================= SCREEN 3: TEAM WARS & LEADERBOARD ================= -->
-      <section id="screenWars" class="hidden space-y-4">
-        <div class="bg-gradient-to-r from-emerald-950 to-gray-900 border border-emerald-800/80 p-4 rounded-2xl text-center space-y-1">
-          <span class="text-[10px] font-black uppercase text-amber-400 tracking-widest">WEEKLY TURF WAR #42</span>
-          <h2 class="text-lg font-black text-white">NATIONAL CAMPUS & AREA LEAGUE</h2>
-          <p class="text-[11px] text-gray-400">Total team Rep points dictate turf ownership!</p>
-        </div>
-
-        <!-- Leaderboard List -->
-        <div class="space-y-2" id="leaderboardList">
-          <!-- Populated dynamically via JavaScript -->
-        </div>
-      </section>
-
-      <!-- ================= SCREEN 4: DAILY MISSIONS ================= -->
-      <section id="screenMissions" class="hidden space-y-3">
-        <h3 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Daily Streaks & Tasks</h3>
-        
-        <div class="space-y-2">
-          <div class="glass-card p-3 rounded-xl flex justify-between items-center">
-            <div>
-              <h4 class="text-xs font-bold text-white">Daily Login Bonus</h4>
-              <p class="text-[10px] text-gray-400">Claim ₦20,000 daily startup cash</p>
-            </div>
-            <button onclick="claimDailyBonus()" id="btnDailyBonus" class="px-3 py-1.5 bg-emerald-500 text-black font-extrabold text-xs rounded-lg">
-              CLAIM
-            </button>
-          </div>
-
-          <div class="glass-card p-3 rounded-xl flex justify-between items-center">
-            <div>
-              <h4 class="text-xs font-bold text-white">Out-hustle 3 Gigs</h4>
-              <p class="text-[10px] text-gray-400">Earn +50 Team Rep</p>
-            </div>
-            <span class="text-xs font-bold text-amber-400">1 / 3 Done</span>
+    <!-- AI Street NPC Conversation Modal -->
+    <div id="aiModal" class="hidden absolute inset-0 bg-black/85 backdrop-blur-md z-40 p-4 flex flex-col justify-end">
+      <div class="bg-gray-900 border border-emerald-500/50 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center gap-3 border-b border-gray-800 pb-2">
+          <div class="text-3xl" id="npcAvatar">👮‍♂️</div>
+          <div>
+            <h4 class="text-xs font-black text-amber-400" id="npcName">Officer Danladi (LASTMA)</h4>
+            <p class="text-[10px] text-gray-400">Street Interaction</p>
           </div>
         </div>
-      </section>
-
-    </main>
-
-    <!-- POPUP WAHALA MODAL -->
-    <div id="wahalaModal" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div class="bg-gray-900 border border-amber-500/50 rounded-2xl p-5 w-full space-y-4 text-center">
-        <div class="text-4xl">⚡</div>
-        <h3 class="text-base font-black text-amber-400 uppercase tracking-wide" id="wahalaTitle">NEPA TOOK LIGHT!</h3>
-        <p class="text-xs text-gray-300" id="wahalaDesc">Your generator runs out of fuel while client work is pending.</p>
         
-        <div class="space-y-2 pt-2">
-          <button onclick="resolveWahala('optionA')" class="w-full py-2.5 bg-amber-500 text-black font-extrabold text-xs rounded-xl" id="btnWahalaA">
-            Buy ₦10,000 Fuel (-₦10k)
+        <p class="text-xs text-gray-200 leading-relaxed font-mono bg-gray-950 p-3 rounded-xl border border-gray-800" id="npcDialog">
+          "Oga, your vehicle particulars don expire since yesterday! Park here!"
+        </p>
+
+        <div class="grid grid-cols-1 gap-2 pt-1" id="npcChoices">
+          <button onclick="replyNPC('bribe')" class="py-2.5 bg-emerald-600 text-black font-extrabold text-xs rounded-xl">
+            Offer ₦2,000 "for water" (-₦2,000)
           </button>
-          <button onclick="resolveWahala('optionB')" class="w-full py-2.5 bg-gray-800 text-gray-300 font-extrabold text-xs rounded-xl" id="btnWahalaB">
-            Wait for Light (-20% Rep)
+          <button onclick="replyNPC('argue')" class="py-2.5 bg-gray-800 text-amber-400 font-extrabold text-xs rounded-xl border border-gray-700">
+            Argue and call Big Uncle (-20 Rep)
           </button>
         </div>
       </div>
     </div>
 
-    <!-- BOTTOM ONE-THUMB NAVIGATION BAR -->
-    <nav class="bg-gray-950 border-t border-gray-800/80 px-2 py-2 flex justify-around items-center shrink-0 z-20">
-      <button onclick="switchTab('hustle')" class="nav-btn text-emerald-400 flex flex-col items-center gap-0.5 text-[10px] font-bold">
-        <i class="fa-solid fa-bolt text-base"></i> Hustle
-      </button>
-      <button onclick="switchTab('wars')" class="nav-btn text-gray-500 flex flex-col items-center gap-0.5 text-[10px] font-bold">
-        <i class="fa-solid fa-trophy text-base"></i> Turf Wars
-      </button>
-      <button onclick="switchTab('missions')" class="nav-btn text-gray-500 flex flex-col items-center gap-0.5 text-[10px] font-bold">
-        <i class="fa-solid fa-list-check text-base"></i> Missions
-      </button>
+    <!-- Bottom Navigation -->
+    <nav class="p-3 bg-gray-950 border-t border-gray-800 flex justify-around text-[11px] font-extrabold text-gray-400">
+      <button class="text-emerald-400 flex flex-col items-center gap-0.5"><i class="fa-solid fa-street-view text-base"></i> Street</button>
+      <button onclick="alert('Business Hub: Buy POS Stands & Real Estate coming next!')" class="flex flex-col items-center gap-0.5"><i class="fa-solid fa-building text-base"></i> Assets</button>
+      <button onclick="alert('Leaderboard: Edo Poly vs UNILAG rivalry active!')" class="flex flex-col items-center gap-0.5"><i class="fa-solid fa-trophy text-base"></i> Turfs</button>
     </nav>
-
   </div>
 
-  <!-- INLINE GAME ENGINE LOGIC & PWA REGISTRATION -->
   <script>
-    // Local State Storage
-    let gameState = {
-      alias: 'Street Hustler',
-      avatar: '🚀',
-      turf: 'Edo Poly',
-      cash: 50000,
-      rep: 120,
-      energy: 80,
-      hunger: 30,
-      hasClaimedBonus: false
-    };
+    const canvas = document.getElementById('streetCanvas');
+    const ctx = canvas.getContext('2d');
 
-    // Simulated Turf Leaderboard DB Data
-    let leaderboards = [
-      { name: 'Edo Poly (Benin)', rep: 14500, avatar: '🏫' },
-      { name: 'UNILAG (Lagos)', rep: 12800, avatar: '🎓' },
-      { name: 'Wuse II (Abuja)', rep: 9400, avatar: '🏛️' },
-      { name: 'Ajegunle FC', rep: 8900, avatar: '⚽' }
+    // Player State & Position
+    let player = { x: 180, y: 300, speed: 12, size: 16 };
+    let cash = 75000;
+
+    // NPC & Street Objects
+    let npcs = [
+      { x: 80, y: 100, type: 'mama_put', label: '🍲 Mama Put', icon: '🍲' },
+      { x: 280, y: 150, type: 'pos_stand', label: '🏧 POS Agent', icon: '🏧' },
+      { x: 180, y: 60, type: 'lastma', label: '👮‍♂️ Checkpoint', icon: '👮‍♂️' }
     ];
 
-    // Initialize Game
-    window.onload = () => {
-      loadSavedData();
-      renderLeaderboard();
-      registerPWA();
-    };
+    let cars = [
+      { x: 0, y: 200, speed: 3, color: '#f59e0b', label: 'Danfo' }
+    ];
 
-    function loadSavedData() {
-      const saved = localStorage.getItem('naija_turf_state');
-      if (saved) {
-        gameState = JSON.parse(saved);
-        document.getElementById('screenOnboarding').classList.add('hidden');
-        document.getElementById('screenHustle').classList.remove('hidden');
-      }
-      updateUI();
+    // Main Game Render Loop
+    function gameLoop() {
+      // Clear canvas
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Roads
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 180, canvas.width, 60); // Main Street
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(0, 208, canvas.width, 4); // Yellow dividing line
+
+      // Move & Draw Vehicles (Danfo traffic)
+      cars.forEach(car => {
+        car.x += car.speed;
+        if (car.x > canvas.width) car.x = -60;
+        ctx.fillStyle = car.color;
+        ctx.fillRect(car.x, car.y, 45, 24);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('🚌 DANFO', car.x + 2, car.y + 16);
+      });
+
+      // Draw NPCs / Locations
+      npcs.forEach(npc => {
+        ctx.fillStyle = '#022c22';
+        ctx.beginPath();
+        ctx.arc(npc.x, npc.y, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#10b981';
+        ctx.stroke();
+
+        ctx.font = '14px sans-serif';
+        ctx.fillText(npc.icon, npc.x - 7, npc.y + 5);
+
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '9px sans-serif';
+        ctx.fillText(npc.label, npc.x - 24, npc.y - 22);
+      });
+
+      // Draw Player Character
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#008751';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('YOU', player.x - 10, player.y + 4);
+
+      requestAnimationFrame(gameLoop);
     }
 
-    function saveState() {
-      localStorage.setItem('naija_turf_state', JSON.stringify(gameState));
-      updateUI();
+    // Controls
+    function movePlayer(dir) {
+      if (dir === 'up') player.y = Math.max(30, player.y - player.speed);
+      if (dir === 'down') player.y = Math.min(canvas.height - 30, player.y + player.speed);
+      if (dir === 'left') player.x = Math.max(30, player.x - player.speed);
+      if (dir === 'right') player.x = Math.min(canvas.width - 30, player.x + player.speed);
+
+      checkProximity();
     }
 
-    function updateUI() {
-      document.getElementById('userName').innerText = gameState.alias;
-      document.getElementById('userAvatar').innerText = gameState.avatar;
-      document.getElementById('userTeam').innerText = gameState.turf;
-      document.getElementById('statCash').innerText = `₦${gameState.cash.toLocaleString()}`;
-      document.getElementById('statRep').innerText = `${gameState.rep.toLocaleString()} PTS`;
-      document.getElementById('barEnergy').style.width = `${gameState.energy}%`;
-      document.getElementById('labelEnergy').innerText = `${gameState.energy}%`;
-      document.getElementById('barHunger').style.width = `${gameState.hunger}%`;
-      document.getElementById('labelHunger').innerText = `${gameState.hunger}%`;
+    function checkProximity() {
+      npcs.forEach(npc => {
+        let dist = Math.hypot(player.x - npc.x, player.y - npc.y);
+        if (dist < 30) {
+          triggerNPCInteraction(npc);
+        }
+      });
     }
 
-    function handleOnboarding(e) {
-      e.preventDefault();
-      gameState.alias = document.getElementById('inputAlias').value || 'Mogul';
-      gameState.turf = document.getElementById('inputTurf').value;
-      saveState();
-      switchTab('hustle');
-    }
-
-    function selectAvatar(emoji) {
-      gameState.avatar = emoji;
-      document.querySelectorAll('.avatar-opt').forEach(btn => btn.classList.replace('border-emerald-500/80', 'border-gray-800'));
-      event.currentTarget.classList.replace('border-gray-800', 'border-emerald-500/80');
-    }
-
-    function doHustle(type) {
-      if (gameState.energy < 15) {
-        alert("You are too exhausted! Eat food or rest to recover energy.");
-        return;
-      }
-
-      if (type === 'pos') {
-        gameState.cash += 15000;
-        gameState.rep += 15;
-        gameState.energy -= 10;
-        gameState.hunger = Math.min(100, gameState.hunger + 10);
-      } else if (type === 'dev') {
-        gameState.cash += 60000;
-        gameState.rep += 40;
-        gameState.energy -= 25;
-        gameState.hunger = Math.min(100, gameState.hunger + 15);
-      } else if (type === 'food') {
-        if (gameState.cash < 5000) { alert("Not enough cash for Bukka!"); return; }
-        gameState.cash -= 5000;
-        gameState.hunger = Math.max(0, gameState.hunger - 40);
-        gameState.energy = Math.min(100, gameState.energy + 30);
-      }
-
-      saveState();
-    }
-
-    function triggerRandomWahala() {
-      const modal = document.getElementById('wahalaModal');
+    function triggerNPCInteraction(npc) {
+      const modal = document.getElementById('aiModal');
       modal.classList.remove('hidden');
+
+      if (npc.type === 'lastma') {
+        document.getElementById('npcAvatar').innerText = '👮‍♂️';
+        document.getElementById('npcName').innerText = 'Officer Danladi (LASTMA)';
+        document.getElementById('npcDialog').innerText = '"Oga, your seatbelt no tight! Park here before I tow your vehicle!"';
+      } else if (npc.type === 'pos_stand') {
+        document.getElementById('npcAvatar').innerText = '🏧';
+        document.getElementById('npcName').innerText = 'Blessing POS Hub';
+        document.getElementById('npcDialog').innerText = '"Welcome boss! You wan cash out or you wan transfer?"';
+      } else if (npc.type === 'mama_put') {
+        document.getElementById('npcAvatar').innerText = '🍲';
+        document.getElementById('npcName').innerText = 'Mama Caro Bukka';
+        document.getElementById('npcDialog').innerText = '"Hot Eba, Egusi, and Goat meat dey ready. How much own you wan chop?"';
+      }
     }
 
-    function resolveWahala(option) {
-      if (option === 'optionA') {
-        gameState.cash = Math.max(0, gameState.cash - 10000);
+    function replyNPC(choice) {
+      document.getElementById('aiModal').classList.add('hidden');
+      if (choice === 'bribe') {
+        cash -= 2000;
+        document.getElementById('cashStat').innerText = `₦${cash.toLocaleString()}`;
+        alert("Officer let you go with a salute! (-₦2,000)");
       } else {
-        gameState.rep = Math.max(0, gameState.rep - 20);
-      }
-      document.getElementById('wahalaModal').classList.add('hidden');
-      saveState();
-    }
-
-    function claimDailyBonus() {
-      if (gameState.hasClaimedBonus) return;
-      gameState.cash += 20000;
-      gameState.hasClaimedBonus = true;
-      document.getElementById('btnDailyBonus').innerText = 'CLAIMED';
-      document.getElementById('btnDailyBonus').disabled = true;
-      document.getElementById('btnDailyBonus').classList.replace('bg-emerald-500', 'bg-gray-700');
-      saveState();
-    }
-
-    function renderLeaderboard() {
-      const list = document.getElementById('leaderboardList');
-      list.innerHTML = leaderboards.map((team, idx) => `
-        <div class="glass-card p-3 rounded-xl flex justify-between items-center">
-          <div class="flex items-center gap-3">
-            <span class="font-extrabold text-sm ${idx === 0 ? 'text-amber-400' : 'text-gray-500'}">#${idx + 1}</span>
-            <div>
-              <h4 class="font-bold text-xs text-white">${team.name}</h4>
-              <p class="text-[10px] text-gray-400">${team.rep.toLocaleString()} Total Rep</p>
-            </div>
-          </div>
-          <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 font-extrabold px-2 py-0.5 rounded-full">ACTIVE</span>
-        </div>
-      `).join('');
-    }
-
-    function switchTab(tab) {
-      document.getElementById('screenOnboarding').classList.add('hidden');
-      document.getElementById('screenHustle').classList.add('hidden');
-      document.getElementById('screenWars').classList.add('hidden');
-      document.getElementById('screenMissions').classList.add('hidden');
-
-      if (tab === 'hustle') document.getElementById('screenHustle').classList.remove('hidden');
-      if (tab === 'wars') document.getElementById('screenWars').classList.remove('hidden');
-      if (tab === 'missions') document.getElementById('screenMissions').classList.remove('hidden');
-    }
-
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      document.documentElement.classList.toggle('light');
-    }
-
-    // Dynamic PWA Generator (Self-contained ServiceWorker registration)
-    function registerPWA() {
-      if ('serviceWorker' in navigator) {
-        const swBlob = new Blob([`
-          self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['/']))));
-          self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-        `], { type: 'application/javascript' });
-        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+        alert("You argued for 30 minutes! Energy reduced.");
       }
     }
 
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('pwaInstallBtn').classList.remove('hidden');
-    });
-
-    function installPWA() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          document.getElementById('pwaInstallBtn').classList.add('hidden');
-        });
-      }
-    }
+    // Start 2D Simulation
+    gameLoop();
   </script>
 </body>
 </html>
