@@ -1,372 +1,500 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAIJA-SIM: The Nigerian Life & Influence Engine</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #08090c;
-            color: #e2e8f0;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NAIJA TURF: Street & Campus Rivalry</title>
+  
+  <!-- PWA Capabilities -->
+  <meta name="theme-color" content="#022c22">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NaijaTurf">
+  
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            naija: {
+              green: '#008751',
+              darkGreen: '#022c22',
+              gold: '#fbbf24',
+              accent: '#10b981'
+            }
+          }
         }
-        .glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-        .glow-gold { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
-        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
-    </style>
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+    
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ankara Pattern Subtle Background Overlay */
+    .ankara-bg {
+      background-color: #022c22;
+      background-image: radial-gradient(#008751 0.75px, transparent 0.75px), radial-gradient(#fbbf24 0.75px, #022c22 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      background-opacity: 0.15;
+    }
+
+    /* Glassmorphism styling */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    /* Hide Scrollbar for clean mobile view */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen flex flex-col justify-between">
+<body class="bg-gray-950 text-gray-100 min-h-screen flex justify-center items-center overflow-x-hidden selection:bg-emerald-500 selection:text-black">
 
-    <div>
-        <!-- Header / Status Bar -->
-        <header class="flex flex-col md:flex-row justify-between items-center border-b border-gray-800 pb-4 mb-6 gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-black text-xl">🇳🇬</div>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        NAIJA-SIM 
-                        <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse">LIVE AGENT ENGINE</span>
-                    </h1>
-                    <p class="text-xs text-gray-400">Multi-Agent Autonomous Nigeria Simulation</p>
-                </div>
-            </div>
-            
-            <!-- Player Stats Bar -->
-            <div class="flex items-center gap-4 md:gap-6 bg-gray-900/80 px-4 md:px-6 py-2.5 rounded-xl border border-gray-800 w-full md:w-auto justify-between">
-                <div>
-                    <span class="text-xs text-gray-400 block">Bank Balance</span>
-                    <span class="text-emerald-400 font-bold text-base md:text-lg" id="playerCash">₦1,250,000</span>
-                </div>
-                <div class="h-8 w-px bg-gray-800"></div>
-                <div>
-                    <span class="text-xs text-gray-400 block">Aura / Street Clout</span>
-                    <span class="text-amber-400 font-bold text-base md:text-lg" id="playerAura">8,420 PTS</span>
-                </div>
-                <div class="h-8 w-px bg-gray-800"></div>
-                <div>
-                    <span class="text-xs text-gray-400 block">Current Rank</span>
-                    <span class="text-purple-400 font-bold text-xs md:text-sm" id="playerRank">Lekki Tech Mogul</span>
-                </div>
-            </div>
-        </header>
+  <!-- Mobile Viewport Container (360px - 430px Target) -->
+  <div id="app-container" class="w-full max-w-[430px] h-[100dvh] flex flex-col justify-between bg-gray-900 shadow-2xl relative overflow-hidden border-x border-gray-800/50">
 
-        <!-- Main Dashboard -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Left Column: Live AI Ticker & World Events -->
-            <div class="lg:col-span-4 space-y-6">
-                
-                <!-- Real-Time Event Feed -->
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Live Street Feed
-                        </h2>
-                        <span class="text-xs text-gray-500">Autonomous Feed</span>
-                    </div>
-                    
-                    <div class="space-y-3 max-h-[340px] overflow-y-auto pr-1" id="tickerFeed">
-                        <div class="p-3 rounded-lg bg-gray-800/40 border border-gray-800 text-xs space-y-1">
-                            <div class="flex justify-between text-gray-400">
-                                <span class="font-bold text-emerald-400">@wizzy_official_ai (Celebrity Agent)</span>
-                                <span>Just now</span>
-                            </div>
-                            <p class="text-gray-200">"Hosting private VIP beach rave in Lekki Phase 1 tonight. Pull up with high Aura!"</p>
-                        </div>
-
-                        <div class="p-3 rounded-lg bg-gray-800/40 border border-gray-800 text-xs space-y-1">
-                            <div class="flex justify-between text-gray-400">
-                                <span class="font-bold text-amber-400">@chief_tega_ai (Oil Mogul)</span>
-                                <span>2m ago</span>
-                            </div>
-                            <p class="text-gray-200">"Invested ₦50M into Lekki Real Estate. Parallel FX rate volatility favors the brave."</p>
-                        </div>
-
-                        <div class="p-3 rounded-lg bg-gray-800/40 border border-gray-800 text-xs space-y-1">
-                            <div class="flex justify-between text-gray-400">
-                                <span class="font-bold text-purple-400">@yaba_techbro_ai (Founder)</span>
-                                <span>5m ago</span>
-                            </div>
-                            <p class="text-gray-200">"Looking for an AI co-founder on Twitter to scale startup infrastructure in Yaba."</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Macro Economic Twin -->
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-                    <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Macro Economic Twin</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-3 bg-gray-800/30 rounded-xl border border-gray-800">
-                            <span class="text-xs text-gray-400 block">Fuel Price / Litre</span>
-                            <span class="text-white font-bold text-base">₦1,150</span>
-                            <span class="text-xs text-red-400 block mt-0.5">▲ High Demand</span>
-                        </div>
-                        <div class="p-3 bg-gray-800/30 rounded-xl border border-gray-800">
-                            <span class="text-xs text-gray-400 block">Parallel FX Rate</span>
-                            <span class="text-white font-bold text-base">₦1,640 / $1</span>
-                            <span class="text-xs text-amber-400 block mt-0.5">► Volatile</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Center Column: Interactive World Action Hub -->
-            <div class="lg:col-span-5 space-y-6">
-                
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider">Lagos Macro Sector Engine</h2>
-                        <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">Region: Ikeja & Lekki</span>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="space-y-3">
-                        <div class="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-xl transition cursor-pointer flex justify-between items-center group" onclick="executeAction('business')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg">
-                                    <i class="fa-solid fa-briefcase"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-sm group-hover:text-emerald-400 transition">Launch Tech Startup / Venture</h4>
-                                    <p class="text-xs text-gray-400">Pitch AI venture capital agents in Yaba</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-emerald-500 text-black font-bold px-3 py-1 rounded-lg">+₦500k Potential</span>
-                        </div>
-
-                        <div class="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-xl transition cursor-pointer flex justify-between items-center group" onclick="executeAction('entertainment')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-lg">
-                                    <i class="fa-solid fa-bolt"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-sm group-hover:text-purple-400 transition">Host VIP Beach Rave / Clout Node</h4>
-                                    <p class="text-xs text-gray-400">Invite celebrity AI personas & influencers</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-purple-500 text-white font-bold px-3 py-1 rounded-lg">+2,500 Aura</span>
-                        </div>
-
-                        <div class="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-xl transition cursor-pointer flex justify-between items-center group" onclick="executeAction('trade')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
-                                    <i class="fa-solid fa-arrow-trend-up"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-sm group-hover:text-amber-400 transition">Corner Commodity Market</h4>
-                                    <p class="text-xs text-gray-400">Buy electronic supplies in Ikeja Computer Village</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-amber-500 text-black font-bold px-3 py-1 rounded-lg">High Risk</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Console & Flex Card Generator -->
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 space-y-4">
-                    <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider">AI Persona Console & Share Engine</h3>
-                    <div class="p-3 bg-black/60 rounded-xl border border-gray-800 text-xs font-mono space-y-2 max-h-28 overflow-y-auto" id="consoleOutput">
-                        <p class="text-emerald-400">> System Ready. Autonomous Agents Synced to Supabase DB.</p>
-                    </div>
-                    <button onclick="generateFlexCard()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition">
-                        <i class="fa-solid fa-share-nodes"></i> Export WhatsApp Flex Card
-                    </button>
-                </div>
-
-            </div>
-
-            <!-- Right Column: National Leaderboard & Monetization -->
-            <div class="lg:col-span-3 space-y-6">
-                
-                <!-- Leaderboard -->
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-                    <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 flex items-center justify-between">
-                        <span>National Leaderboard</span>
-                        <i class="fa-solid fa-trophy text-amber-400"></i>
-                    </h3>
-                    <div class="space-y-3 text-xs">
-                        <div class="flex justify-between items-center p-2 rounded bg-gray-800/40 border border-gray-800">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-amber-400">#1</span>
-                                <span class="text-white font-bold">@wizzy_official_ai</span>
-                            </div>
-                            <span class="text-emerald-400 font-bold">95,000 Aura</span>
-                        </div>
-
-                        <div class="flex justify-between items-center p-2 rounded bg-gray-800/40 border border-gray-800">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-300">#2</span>
-                                <span class="text-white font-bold">@chief_tega_ai</span>
-                            </div>
-                            <span class="text-emerald-400 font-bold">48,200 Aura</span>
-                        </div>
-
-                        <div class="flex justify-between items-center p-2 rounded bg-gray-800/40 border border-gray-800">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-amber-700">#3</span>
-                                <span class="text-white font-bold">You (Mogul)</span>
-                            </div>
-                            <span class="text-emerald-400 font-bold" id="leaderboardAura">8,420 Aura</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rewarded Ad Station -->
-                <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 space-y-3">
-                    <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider">Aura Recharge Station</h3>
-                    <button onclick="watchAd()" class="w-full p-3 bg-emerald-950/40 border border-emerald-800/50 hover:bg-emerald-900/50 rounded-xl text-xs space-y-1 text-left transition">
-                        <span class="text-emerald-400 font-bold block flex items-center justify-between">
-                            Watch Sponsored Video 
-                            <i class="fa-solid fa-play-circle text-base"></i>
-                        </span>
-                        <p class="text-gray-400">Instantly earn +1,500 Aura & ₦250,000 cash bonus.</p>
-                    </button>
-                </div>
-
-            </div>
-
+    <!-- TOP HEADER / STATUS BAR -->
+    <header class="p-4 bg-naija-darkGreen border-b border-emerald-900/50 flex justify-between items-center shrink-0 z-20">
+      <div class="flex items-center gap-2.5">
+        <div id="userAvatar" class="w-10 h-10 rounded-full bg-amber-400 border-2 border-emerald-400 flex items-center justify-center font-bold text-black text-lg">
+          👤
         </div>
+        <div>
+          <h1 id="userName" class="font-extrabold text-sm text-white leading-tight">Street Hustler</h1>
+          <span id="userTeam" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-full font-bold">
+            Edo Poly
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- PWA Install Button -->
+        <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-amber-400 text-black font-extrabold text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-lg animate-bounce">
+          <i class="fa-solid fa-download"></i> Install
+        </button>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-emerald-950 border border-emerald-800 text-amber-400 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE SCREENS AREA -->
+    <main class="flex-1 overflow-y-auto no-scrollbar p-4 relative z-10" id="mainScreen">
+
+      <!-- ================= SCREEN 1: ONBOARDING ================= -->
+      <section id="screenOnboarding" class="space-y-6 py-2">
+        <div class="text-center space-y-2">
+          <div class="inline-block p-3 rounded-2xl bg-emerald-950 border border-emerald-800 text-3xl">🇳🇬</div>
+          <h2 class="text-2xl font-black text-white tracking-tight">REP YOUR TURF</h2>
+          <p class="text-xs text-gray-400">Join a school or area squad. Out-hustle rival turfs across Nigeria.</p>
+        </div>
+
+        <form onsubmit="handleOnboarding(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Your Alias / Handle</label>
+            <input type="text" id="inputAlias" required placeholder="e.g. Lekki_VibeCoder" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Select Avatar</label>
+            <div class="grid grid-cols-4 gap-2 text-2xl" id="avatarPicker">
+              <button type="button" onclick="selectAvatar('🚀')" class="avatar-opt p-3 bg-gray-950 border border-emerald-500/80 rounded-xl">🚀</button>
+              <button type="button" onclick="selectAvatar('💻')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">💻</button>
+              <button type="button" onclick="selectAvatar('👑')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">👑</button>
+              <button type="button" onclick="selectAvatar('🔥')" class="avatar-opt p-3 bg-gray-950 border border-gray-800 rounded-xl">🔥</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Choose School / Turf Squad</label>
+            <select id="inputTurf" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+              <option value="Edo Poly">Edo Poly (Benin City)</option>
+              <option value="UNILAG Akoka">UNILAG (Akoka, Lagos)</option>
+              <option value="Ajegunle FC">Ajegunle Warriors (Lagos)</option>
+              <option value="Wuse II Squad">Wuse II (Abuja)</option>
+              <option value="Trans-Amadi">Trans-Amadi (Port Harcourt)</option>
+              <option value="Kano Tech Hub">Kano Tech Hub (Kano)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black font-extrabold text-sm rounded-xl shadow-lg hover:opacity-95 transition active:scale-95">
+            ENTER THE STREETS <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </form>
+      </section>
+
+      <!-- ================= SCREEN 2: CORE LIFE LOOP ================= -->
+      <section id="screenHustle" class="hidden space-y-5">
+        
+        <!-- Vitals Bars -->
+        <div class="glass-card p-3.5 rounded-2xl space-y-2.5">
+          <div class="grid grid-cols-2 gap-3 text-xs font-bold">
+            <div class="bg-gray-950/80 p-2.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
+              <span class="text-gray-400"><i class="fa-solid fa-wallet text-emerald-400"></i> Cash:</span>
+              <span class="text-emerald-400 font-extrabold" id="statCash">₦50,000</span>
+            </div>
+            <div class="bg-gray-950/80 p-2.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
+              <span class="text-gray-400"><i class="fa-solid fa-fire text-amber-400"></i> Rep:</span>
+              <span class="text-amber-400 font-extrabold" id="statRep">120 PTS</span>
+            </div>
+          </div>
+
+          <!-- Meters -->
+          <div class="space-y-2 text-[11px] font-bold">
+            <div>
+              <div class="flex justify-between text-gray-400 mb-1">
+                <span><i class="fa-solid fa-bolt text-amber-400"></i> Energy</span>
+                <span id="labelEnergy">80%</span>
+              </div>
+              <div class="w-full bg-gray-950 rounded-full h-2 overflow-hidden border border-gray-800">
+                <div id="barEnergy" class="bg-amber-400 h-full w-[80%] transition-all"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-gray-400 mb-1">
+                <span><i class="fa-solid fa-utensils text-red-400"></i> Hunger</span>
+                <span id="labelHunger">30%</span>
+              </div>
+              <div class="w-full bg-gray-950 rounded-full h-2 overflow-hidden border border-gray-800">
+                <div id="barHunger" class="bg-red-500 h-full w-[30%] transition-all"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Hustles Grid -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-hammer text-emerald-400"></i> Active Hustles
+          </h3>
+
+          <div class="grid grid-cols-1 gap-2.5">
+            <!-- Hustle 1 -->
+            <button onclick="doHustle('pos')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-emerald-500/50 active:scale-95 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 text-lg">
+                  🏧
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-xs text-white">POS Agent Stall</h4>
+                  <p class="text-[10px] text-gray-400">-10% Energy | +₦15,000 Cash</p>
+                </div>
+              </div>
+              <span class="text-xs bg-emerald-500 text-black font-extrabold px-2.5 py-1 rounded-lg">+15 Rep</span>
+            </button>
+
+            <!-- Hustle 2 -->
+            <button onclick="doHustle('dev')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-purple-500/50 active:scale-95 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-950 border border-purple-800 flex items-center justify-center text-purple-400 text-lg">
+                  💻
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-xs text-white">Remote Freelance Gig</h4>
+                  <p class="text-[10px] text-gray-400">-25% Energy | +₦60,000 Cash</p>
+                </div>
+              </div>
+              <span class="text-xs bg-purple-500 text-white font-extrabold px-2.5 py-1 rounded-lg">+40 Rep</span>
+            </button>
+
+            <!-- Hustle 3 -->
+            <button onclick="doHustle('food')" class="glass-card p-3 rounded-xl flex justify-between items-center text-left hover:border-amber-500/50 active:scale-95 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-amber-950 border border-amber-800 flex items-center justify-center text-amber-400 text-lg">
+                  🍲
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-xs text-white">Eat Mama Put / Food</h4>
+                  <p class="text-[10px] text-gray-400">-₦5,000 Cash | -40% Hunger</p>
+                </div>
+              </div>
+              <span class="text-xs bg-amber-400 text-black font-extrabold px-2.5 py-1 rounded-lg">+30 Energy</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Event Trigger -->
+        <button onclick="triggerRandomWahala()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-red-600 text-black font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation"></i> FACE STREET WAHALA / EVENT
+        </button>
+      </section>
+
+      <!-- ================= SCREEN 3: TEAM WARS & LEADERBOARD ================= -->
+      <section id="screenWars" class="hidden space-y-4">
+        <div class="bg-gradient-to-r from-emerald-950 to-gray-900 border border-emerald-800/80 p-4 rounded-2xl text-center space-y-1">
+          <span class="text-[10px] font-black uppercase text-amber-400 tracking-widest">WEEKLY TURF WAR #42</span>
+          <h2 class="text-lg font-black text-white">NATIONAL CAMPUS & AREA LEAGUE</h2>
+          <p class="text-[11px] text-gray-400">Total team Rep points dictate turf ownership!</p>
+        </div>
+
+        <!-- Leaderboard List -->
+        <div class="space-y-2" id="leaderboardList">
+          <!-- Populated dynamically via JavaScript -->
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 4: DAILY MISSIONS ================= -->
+      <section id="screenMissions" class="hidden space-y-3">
+        <h3 class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Daily Streaks & Tasks</h3>
+        
+        <div class="space-y-2">
+          <div class="glass-card p-3 rounded-xl flex justify-between items-center">
+            <div>
+              <h4 class="text-xs font-bold text-white">Daily Login Bonus</h4>
+              <p class="text-[10px] text-gray-400">Claim ₦20,000 daily startup cash</p>
+            </div>
+            <button onclick="claimDailyBonus()" id="btnDailyBonus" class="px-3 py-1.5 bg-emerald-500 text-black font-extrabold text-xs rounded-lg">
+              CLAIM
+            </button>
+          </div>
+
+          <div class="glass-card p-3 rounded-xl flex justify-between items-center">
+            <div>
+              <h4 class="text-xs font-bold text-white">Out-hustle 3 Gigs</h4>
+              <p class="text-[10px] text-gray-400">Earn +50 Team Rep</p>
+            </div>
+            <span class="text-xs font-bold text-amber-400">1 / 3 Done</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- POPUP WAHALA MODAL -->
+    <div id="wahalaModal" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-gray-900 border border-amber-500/50 rounded-2xl p-5 w-full space-y-4 text-center">
+        <div class="text-4xl">⚡</div>
+        <h3 class="text-base font-black text-amber-400 uppercase tracking-wide" id="wahalaTitle">NEPA TOOK LIGHT!</h3>
+        <p class="text-xs text-gray-300" id="wahalaDesc">Your generator runs out of fuel while client work is pending.</p>
+        
+        <div class="space-y-2 pt-2">
+          <button onclick="resolveWahala('optionA')" class="w-full py-2.5 bg-amber-500 text-black font-extrabold text-xs rounded-xl" id="btnWahalaA">
+            Buy ₦10,000 Fuel (-₦10k)
+          </button>
+          <button onclick="resolveWahala('optionB')" class="w-full py-2.5 bg-gray-800 text-gray-300 font-extrabold text-xs rounded-xl" id="btnWahalaB">
+            Wait for Light (-20% Rep)
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Hidden Canvas for Share Card Export -->
-    <canvas id="flexCanvas" width="600" height="800" class="hidden"></canvas>
+    <!-- BOTTOM ONE-THUMB NAVIGATION BAR -->
+    <nav class="bg-gray-950 border-t border-gray-800/80 px-2 py-2 flex justify-around items-center shrink-0 z-20">
+      <button onclick="switchTab('hustle')" class="nav-btn text-emerald-400 flex flex-col items-center gap-0.5 text-[10px] font-bold">
+        <i class="fa-solid fa-bolt text-base"></i> Hustle
+      </button>
+      <button onclick="switchTab('wars')" class="nav-btn text-gray-500 flex flex-col items-center gap-0.5 text-[10px] font-bold">
+        <i class="fa-solid fa-trophy text-base"></i> Turf Wars
+      </button>
+      <button onclick="switchTab('missions')" class="nav-btn text-gray-500 flex flex-col items-center gap-0.5 text-[10px] font-bold">
+        <i class="fa-solid fa-list-check text-base"></i> Missions
+      </button>
+    </nav>
 
-    <script>
-        let cash = 1250000;
-        let aura = 8420;
+  </div>
 
-        // Web Audio Synth FX Engine
-        function playSound(type) {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+  <!-- INLINE GAME ENGINE LOGIC & PWA REGISTRATION -->
+  <script>
+    // Local State Storage
+    let gameState = {
+      alias: 'Street Hustler',
+      avatar: '🚀',
+      turf: 'Edo Poly',
+      cash: 50000,
+      rep: 120,
+      energy: 80,
+      hunger: 30,
+      hasClaimedBonus: false
+    };
 
-                if (type === 'cash') {
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.3);
-                } else if (type === 'aura') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(200, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.4);
-                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.4);
-                }
-            } catch(e) {}
-        }
+    // Simulated Turf Leaderboard DB Data
+    let leaderboards = [
+      { name: 'Edo Poly (Benin)', rep: 14500, avatar: '🏫' },
+      { name: 'UNILAG (Lagos)', rep: 12800, avatar: '🎓' },
+      { name: 'Wuse II (Abuja)', rep: 9400, avatar: '🏛️' },
+      { name: 'Ajegunle FC', rep: 8900, avatar: '⚽' }
+    ];
 
-        function executeAction(type) {
-            const consoleBox = document.getElementById('consoleOutput');
-            
-            if (type === 'business') {
-                cash += 500000;
-                aura += 800;
-                playSound('cash');
-                consoleBox.innerHTML += `<p class="text-emerald-400">> Pitch Successful! AI VC injected ₦500,000 into your venture.</p>`;
-                addTickerItem('@yaba_techbro_ai', 'Startup deal closed in Yaba tech hub!');
-            } else if (type === 'entertainment') {
-                cash -= 200000;
-                aura += 2500;
-                playSound('aura');
-                consoleBox.innerHTML += `<p class="text-purple-400">> VIP Beach Rave Explosive! 15 Celebrity AI agents attended. +2,500 Aura.</p>`;
-                addTickerItem('@wizzy_official_ai', 'Your VIP party is trending on virtual Twitter!');
-            } else if (type === 'trade') {
-                cash += 1000000;
-                aura += 400;
-                playSound('cash');
-                consoleBox.innerHTML += `<p class="text-amber-400">> Commodity Trade Executed! Electronics cornered in Computer Village.</p>`;
-                addTickerItem('@chief_tega_ai', 'Supply cornered! Market prices shifting nationwide.');
-            }
+    // Initialize Game
+    window.onload = () => {
+      loadSavedData();
+      renderLeaderboard();
+      registerPWA();
+    };
 
-            updateDisplay();
-        }
+    function loadSavedData() {
+      const saved = localStorage.getItem('naija_turf_state');
+      if (saved) {
+        gameState = JSON.parse(saved);
+        document.getElementById('screenOnboarding').classList.add('hidden');
+        document.getElementById('screenHustle').classList.remove('hidden');
+      }
+      updateUI();
+    }
 
-        function watchAd() {
-            aura += 1500;
-            cash += 250000;
-            playSound('cash');
-            const consoleBox = document.getElementById('consoleOutput');
-            consoleBox.innerHTML += `<p class="text-amber-400">> Rewarded Ad Watched! +1,500 Aura & ₦250,000 Added.</p>`;
-            updateDisplay();
-        }
+    function saveState() {
+      localStorage.setItem('naija_turf_state', JSON.stringify(gameState));
+      updateUI();
+    }
 
-        function updateDisplay() {
-            document.getElementById('playerCash').innerText = `₦${cash.toLocaleString()}`;
-            document.getElementById('playerAura').innerText = `${aura.toLocaleString()} PTS`;
-            document.getElementById('leaderboardAura').innerText = `${aura.toLocaleString()} Aura`;
-            const consoleBox = document.getElementById('consoleOutput');
-            consoleBox.scrollTop = consoleBox.scrollHeight;
-        }
+    function updateUI() {
+      document.getElementById('userName').innerText = gameState.alias;
+      document.getElementById('userAvatar').innerText = gameState.avatar;
+      document.getElementById('userTeam').innerText = gameState.turf;
+      document.getElementById('statCash').innerText = `₦${gameState.cash.toLocaleString()}`;
+      document.getElementById('statRep').innerText = `${gameState.rep.toLocaleString()} PTS`;
+      document.getElementById('barEnergy').style.width = `${gameState.energy}%`;
+      document.getElementById('labelEnergy').innerText = `${gameState.energy}%`;
+      document.getElementById('barHunger').style.width = `${gameState.hunger}%`;
+      document.getElementById('labelHunger').innerText = `${gameState.hunger}%`;
+    }
 
-        function addTickerItem(handle, desc) {
-            const ticker = document.getElementById('tickerFeed');
-            const newItem = document.createElement('div');
-            newItem.className = 'p-3 rounded-lg bg-gray-800/40 border border-gray-800 text-xs space-y-1';
-            newItem.innerHTML = `
-                <div class="flex justify-between text-gray-400">
-                    <span class="font-bold text-emerald-400">${handle}</span>
-                    <span>Just now</span>
-                </div>
-                <p class="text-gray-200">${desc}</p>
-            `;
-            ticker.insertBefore(newItem, ticker.firstChild);
-        }
+    function handleOnboarding(e) {
+      e.preventDefault();
+      gameState.alias = document.getElementById('inputAlias').value || 'Mogul';
+      gameState.turf = document.getElementById('inputTurf').value;
+      saveState();
+      switchTab('hustle');
+    }
 
-        function generateFlexCard() {
-            const canvas = document.getElementById('flexCanvas');
-            const ctx = canvas.getContext('2d');
+    function selectAvatar(emoji) {
+      gameState.avatar = emoji;
+      document.querySelectorAll('.avatar-opt').forEach(btn => btn.classList.replace('border-emerald-500/80', 'border-gray-800'));
+      event.currentTarget.classList.replace('border-gray-800', 'border-emerald-500/80');
+    }
 
-            // Card Background
-            ctx.fillStyle = '#08090c';
-            ctx.fillRect(0, 0, 600, 800);
+    function doHustle(type) {
+      if (gameState.energy < 15) {
+        alert("You are too exhausted! Eat food or rest to recover energy.");
+        return;
+      }
 
-            // Border
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 8;
-            ctx.strokeRect(20, 20, 560, 760);
+      if (type === 'pos') {
+        gameState.cash += 15000;
+        gameState.rep += 15;
+        gameState.energy -= 10;
+        gameState.hunger = Math.min(100, gameState.hunger + 10);
+      } else if (type === 'dev') {
+        gameState.cash += 60000;
+        gameState.rep += 40;
+        gameState.energy -= 25;
+        gameState.hunger = Math.min(100, gameState.hunger + 15);
+      } else if (type === 'food') {
+        if (gameState.cash < 5000) { alert("Not enough cash for Bukka!"); return; }
+        gameState.cash -= 5000;
+        gameState.hunger = Math.max(0, gameState.hunger - 40);
+        gameState.energy = Math.min(100, gameState.energy + 30);
+      }
 
-            // Title
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 36px sans-serif';
-            ctx.fillText('NAIJA-SIM AURA CARD', 60, 100);
+      saveState();
+    }
 
-            // Stats
-            ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 28px sans-serif';
-            ctx.fillText(`AURA: ${aura.toLocaleString()} PTS`, 60, 200);
+    function triggerRandomWahala() {
+      const modal = document.getElementById('wahalaModal');
+      modal.classList.remove('hidden');
+    }
 
-            ctx.fillStyle = '#f59e0b';
-            ctx.fillText(`BANK: ₦${cash.toLocaleString()}`, 60, 260);
+    function resolveWahala(option) {
+      if (option === 'optionA') {
+        gameState.cash = Math.max(0, gameState.cash - 10000);
+      } else {
+        gameState.rep = Math.max(0, gameState.rep - 20);
+      }
+      document.getElementById('wahalaModal').classList.add('hidden');
+      saveState();
+    }
 
-            ctx.fillStyle = '#a855f7';
-            ctx.fillText(`RANK: Lekki Tech Mogul`, 60, 320);
+    function claimDailyBonus() {
+      if (gameState.hasClaimedBonus) return;
+      gameState.cash += 20000;
+      gameState.hasClaimedBonus = true;
+      document.getElementById('btnDailyBonus').innerText = 'CLAIMED';
+      document.getElementById('btnDailyBonus').disabled = true;
+      document.getElementById('btnDailyBonus').classList.replace('bg-emerald-500', 'bg-gray-700');
+      saveState();
+    }
 
-            // Watermark & Call to Action
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '20px sans-serif';
-            ctx.fillText('Can you beat my street clout in Nigeria?', 60, 680);
-            ctx.fillText('Play live on naija-sim.vercel.app', 60, 720);
+    function renderLeaderboard() {
+      const list = document.getElementById('leaderboardList');
+      list.innerHTML = leaderboards.map((team, idx) => `
+        <div class="glass-card p-3 rounded-xl flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <span class="font-extrabold text-sm ${idx === 0 ? 'text-amber-400' : 'text-gray-500'}">#${idx + 1}</span>
+            <div>
+              <h4 class="font-bold text-xs text-white">${team.name}</h4>
+              <p class="text-[10px] text-gray-400">${team.rep.toLocaleString()} Total Rep</p>
+            </div>
+          </div>
+          <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 font-extrabold px-2 py-0.5 rounded-full">ACTIVE</span>
+        </div>
+      `).join('');
+    }
 
-            // Download image
-            const image = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = 'naija-sim-flex.png';
-            link.href = image;
-            link.click();
-        }
-    </script>
+    function switchTab(tab) {
+      document.getElementById('screenOnboarding').classList.add('hidden');
+      document.getElementById('screenHustle').classList.add('hidden');
+      document.getElementById('screenWars').classList.add('hidden');
+      document.getElementById('screenMissions').classList.add('hidden');
+
+      if (tab === 'hustle') document.getElementById('screenHustle').classList.remove('hidden');
+      if (tab === 'wars') document.getElementById('screenWars').classList.remove('hidden');
+      if (tab === 'missions') document.getElementById('screenMissions').classList.remove('hidden');
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('light');
+    }
+
+    // Dynamic PWA Generator (Self-contained ServiceWorker registration)
+    function registerPWA() {
+      if ('serviceWorker' in navigator) {
+        const swBlob = new Blob([`
+          self.addEventListener('install', e => e.waitUntil(caches.open('v1').then(c => c.addAll(['/']))));
+          self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+        `], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+      }
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwaInstallBtn').classList.remove('hidden');
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          document.getElementById('pwaInstallBtn').classList.add('hidden');
+        });
+      }
+    }
+  </script>
 </body>
 </html>
